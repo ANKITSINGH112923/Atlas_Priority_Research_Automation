@@ -8,13 +8,13 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "3152b73c-f5ff-5cff-8902-1a5c3e6c34d6",
+      "id": "497057fa-7a6c-443e-ab75-fc163f4c2b53",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
         0,
-        300
+        336
       ],
       "webhookId": "dd3204b5-e538-5a15-a384-ce50978b1673"
     },
@@ -24,7 +24,8 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -82,13 +83,13 @@
         },
         "options": {}
       },
-      "id": "13093eab-3953-5290-a0d6-e5935fe0b1b6",
+      "id": "c57bdcb6-658d-4a73-a719-f6c8c10f9eb7",
       "name": "Validate Research Request",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
         240,
-        300
+        336
       ]
     },
     {
@@ -99,20 +100,19 @@
           "responseCode": 400
         }
       },
-      "id": "0919427a-e37a-50c2-8799-489eb0487ed5",
+      "id": "54ba0e5b-02aa-435b-97c7-3df4c68c7240",
       "name": "Respond to Webhook (Invalid Request)",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
         480,
-        520
+        560
       ]
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "=Companies: {{ $('Webhook').item.json.body.company }}\nQuestion: {{ $('Webhook').item.json.body.question }}\n\nAtlas research to format:\n{{ $('Webhook').item.json.body.report }}",
-        "hasOutputParser": false,
         "messages": {
           "messageValues": [
             {
@@ -121,37 +121,15 @@
           ]
         }
       },
-      "id": "009f9a3e-e4e7-5768-927e-17dd9d1a0317",
+      "id": "3b399479-4ed0-4e28-bec7-7534ff95e63c",
       "name": "Format Research Report",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.5,
       "position": [
         480,
-        160
+        208
       ],
       "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "model": "deepseek-chat",
-        "options": {
-          "temperature": 0
-        }
-      },
-      "id": "02742fbc-6642-5940-a630-9c773949ce7b",
-      "name": "DeepSeek Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
-      "typeVersion": 1,
-      "position": [
-        500,
-        420
-      ],
-      "credentials": {
-        "deepSeekApi": {
-          "id": "CONFIGURE_ME",
-          "name": "DeepSeek account"
-        }
-      }
     },
     {
       "parameters": {
@@ -161,29 +139,28 @@
           "responseCode": 502
         }
       },
-      "id": "eed57058-441e-5059-b1b4-216fc8a5fb08",
+      "id": "e1a846f0-2b37-4f2e-9abd-39c3875ed203",
       "name": "Respond to Webhook (Report Error)",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        840,
-        380
+        848,
+        416
       ]
     },
     {
       "parameters": {
         "mode": "markdownToHtml",
         "markdown": "={{ $json.text }}",
-        "destinationKey": "data",
         "options": {}
       },
-      "id": "7d383fa6-fc9d-57cb-98ea-d286393799fa",
+      "id": "5a2551bc-29ed-4225-bd76-a1693645b5c6",
       "name": "Markdown",
       "type": "n8n-nodes-base.markdown",
       "typeVersion": 1,
       "position": [
-        840,
-        100
+        848,
+        144
       ]
     },
     {
@@ -192,7 +169,8 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -209,35 +187,35 @@
         },
         "options": {}
       },
-      "id": "0709e6c4-fca3-506d-b799-8f6708700147",
+      "id": "ae45bb1e-941b-4930-8fff-f77107a73628",
       "name": "Is Urgent?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1080,
-        100
+        1088,
+        144
       ]
     },
     {
       "parameters": {
-        "fromEmail": "your-smtp-sender@example.com",
+        "fromEmail": "kingankitsingh777@gmail.com",
         "toEmail": "={{ $('Webhook').item.json.body.recipient }}",
         "subject": "=URGENT | Atlas Research | {{ $('Webhook').item.json.body.company }}",
-        "emailFormat": "html",
         "html": "={{ $json.data }}",
         "options": {}
       },
-      "id": "6e38cdef-27e5-517a-a3a1-b8dc9a4f6580",
+      "id": "809580eb-2822-4839-8b05-5a756264faaa",
       "name": "Send Urgent Research Email",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        1320,
-        0
+        1328,
+        48
       ],
+      "webhookId": "e183c37e-ba26-4630-b473-ca2cfe9a21d4",
       "credentials": {
         "smtp": {
-          "id": "CONFIGURE_ME",
+          "id": "pVQfFLDhYMad44CA",
           "name": "SMTP account"
         }
       },
@@ -245,24 +223,24 @@
     },
     {
       "parameters": {
-        "fromEmail": "your-smtp-sender@example.com",
+        "fromEmail": "kingankitsingh777@gmail.com",
         "toEmail": "={{ $('Webhook').item.json.body.recipient }}",
         "subject": "=Atlas Research | {{ $('Webhook').item.json.body.company }}",
-        "emailFormat": "html",
         "html": "={{ $json.data }}",
         "options": {}
       },
-      "id": "35a4977c-74ad-5527-ae45-dcfd4c1f7a5d",
+      "id": "725462ba-5587-4c10-938f-63d09e612218",
       "name": "Send Normal Research Email",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        1320,
-        220
+        1328,
+        256
       ],
+      "webhookId": "7d4fd255-cac8-486d-9878-04c57f75120a",
       "credentials": {
         "smtp": {
-          "id": "CONFIGURE_ME",
+          "id": "pVQfFLDhYMad44CA",
           "name": "SMTP account"
         }
       },
@@ -276,13 +254,13 @@
           "responseCode": 200
         }
       },
-      "id": "40fb9f47-d652-5f3c-942b-f645fc508d1e",
+      "id": "573e0462-987d-4920-ae3f-b45c9097a4d1",
       "name": "Respond to Webhook (Urgent Success)",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1560,
-        -40
+        1568,
+        0
       ]
     },
     {
@@ -293,13 +271,13 @@
           "responseCode": 200
         }
       },
-      "id": "acb05ac5-27c6-5630-85b8-653fbea5899c",
+      "id": "54cd3620-5db4-4dc4-b6c9-09cab9bb746a",
       "name": "Respond to Webhook (Normal Success)",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1560,
-        180
+        1568,
+        224
       ]
     },
     {
@@ -310,16 +288,37 @@
           "responseCode": 502
         }
       },
-      "id": "db73d92b-e466-5020-8de2-d92641a13cf6",
+      "id": "8029ab79-7e8f-4f53-9b68-b4da31fc75bb",
       "name": "Respond to Webhook (Email Error)",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1560,
-        400
+        1568,
+        448
       ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        496,
+        400
+      ],
+      "id": "c7745da4-4065-45ad-b8b8-cb4b27a27778",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "magic9Rwi0BsoX9P",
+          "name": "Groq account"
+        }
+      }
     }
   ],
+  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
@@ -363,17 +362,6 @@
           {
             "node": "Respond to Webhook (Report Error)",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "DeepSeek Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Format Research Report",
-            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -443,14 +431,30 @@
           }
         ]
       ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Format Research Report",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
-  "pinData": {},
+  "versionId": "0b82e6b5-462f-4eb4-979c-1e54a06f3737",
   "meta": {
-    "templateCredsSetupCompleted": false
-  }
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9b285d2a0b96146e499e2f6989eb695985a0a9d887a450d7f9b45d6f6dcc07ad"
+  },
+  "nodeGroups": [],
+  "id": "kyBhfSBjSCsXN740",
+  "tags": []
 }
