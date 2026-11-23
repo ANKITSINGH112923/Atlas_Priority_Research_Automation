@@ -1,0 +1,456 @@
+{
+  "name": "Atlas Priority Research Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "atlas-priority",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "3152b73c-f5ff-5cff-8902-1a5c3e6c34d6",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "webhookId": "dd3204b5-e538-5a15-a384-ce50978b1673"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "f2214929-1fe6-51da-abbf-9063f1d5d38c",
+              "leftValue": "={{ /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String($json.body.recipient ?? '').trim()) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "92a281c9-e4ed-56c0-acb9-a6999caa5721",
+              "leftValue": "={{ String($json.body.company ?? '').trim().length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "a3da61c4-7a2b-5517-b627-24efb58497d0",
+              "leftValue": "={{ String($json.body.question ?? '').trim().length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e5aa5386-289e-5c69-b89e-5d7451275591",
+              "leftValue": "={{ String($json.body.report ?? '').trim().length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "a76f1b87-ece6-5560-837d-6e2b8e34d63d",
+              "leftValue": "={{ ['normal','urgent'].includes($json.body.priority) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "13093eab-3953-5290-a0d6-e5935fe0b1b6",
+      "name": "Validate Research Request",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"status\":\"error\",\"message\":\"Invalid recipient, company, question, priority, or report.\"}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "0919427a-e37a-50c2-8799-489eb0487ed5",
+      "name": "Respond to Webhook (Invalid Request)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Companies: {{ $('Webhook').item.json.body.company }}\nQuestion: {{ $('Webhook').item.json.body.question }}\n\nAtlas research to format:\n{{ $('Webhook').item.json.body.report }}",
+        "hasOutputParser": false,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You format research that was already produced by Atlas from the company's uploaded files. Do NOT add outside knowledge and do NOT retrieve anything.\n\nWrite a professional email report in Markdown with exactly these six sections, as level-2 headings:\n## 1. Executive Summary\n## 2. Companies & Reporting Periods\n## 3. Financial Performance\n## 4. Comparisons\n## 5. Key Findings\n## 6. Limitations\n\nRules:\n- Preserve every financial amount, currency, unit and period-end date exactly as given.\n- Never invent or estimate missing figures; state clearly when information is unavailable.\n- Remove internal evidence markers such as [A1], [D1], [D2].\n- Use a Markdown table in section 4 when comparing companies.\n- Output only the Markdown report."
+            }
+          ]
+        }
+      },
+      "id": "009f9a3e-e4e7-5768-927e-17dd9d1a0317",
+      "name": "Format Research Report",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        480,
+        160
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "deepseek-chat",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "02742fbc-6642-5940-a630-9c773949ce7b",
+      "name": "DeepSeek Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        500,
+        420
+      ],
+      "credentials": {
+        "deepSeekApi": {
+          "id": "CONFIGURE_ME",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"status\":\"error\",\"message\":\"Report generation failed.\"}",
+        "options": {
+          "responseCode": 502
+        }
+      },
+      "id": "eed57058-441e-5059-b1b4-216fc8a5fb08",
+      "name": "Respond to Webhook (Report Error)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        840,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.text }}",
+        "destinationKey": "data",
+        "options": {}
+      },
+      "id": "7d383fa6-fc9d-57cb-98ea-d286393799fa",
+      "name": "Markdown",
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        840,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "335129c6-07dd-56d4-89f2-b24dcc13405a",
+              "leftValue": "={{ $('Webhook').item.json.body.priority }}",
+              "rightValue": "urgent",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0709e6c4-fca3-506d-b799-8f6708700147",
+      "name": "Is Urgent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1080,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "your-smtp-sender@example.com",
+        "toEmail": "={{ $('Webhook').item.json.body.recipient }}",
+        "subject": "=URGENT | Atlas Research | {{ $('Webhook').item.json.body.company }}",
+        "emailFormat": "html",
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "id": "6e38cdef-27e5-517a-a3a1-b8dc9a4f6580",
+      "name": "Send Urgent Research Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1320,
+        0
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "CONFIGURE_ME",
+          "name": "SMTP account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fromEmail": "your-smtp-sender@example.com",
+        "toEmail": "={{ $('Webhook').item.json.body.recipient }}",
+        "subject": "=Atlas Research | {{ $('Webhook').item.json.body.company }}",
+        "emailFormat": "html",
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "id": "35a4977c-74ad-5527-ae45-dcfd4c1f7a5d",
+      "name": "Send Normal Research Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1320,
+        220
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "CONFIGURE_ME",
+          "name": "SMTP account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"status\":\"success\",\"message\":\"Urgent research alert submitted.\",\"priority\":\"urgent\"}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "40fb9f47-d652-5f3c-942b-f645fc508d1e",
+      "name": "Respond to Webhook (Urgent Success)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1560,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"status\":\"success\",\"message\":\"Normal research email submitted.\",\"priority\":\"normal\"}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "acb05ac5-27c6-5630-85b8-653fbea5899c",
+      "name": "Respond to Webhook (Normal Success)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1560,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"status\":\"error\",\"message\":\"Email sending failed.\"}",
+        "options": {
+          "responseCode": 502
+        }
+      },
+      "id": "db73d92b-e466-5020-8de2-d92641a13cf6",
+      "name": "Respond to Webhook (Email Error)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1560,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Research Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Research Request": {
+      "main": [
+        [
+          {
+            "node": "Format Research Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook (Invalid Request)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Research Report": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook (Report Error)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Format Research Report",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Is Urgent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Urgent?": {
+      "main": [
+        [
+          {
+            "node": "Send Urgent Research Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Normal Research Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Urgent Research Email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook (Urgent Success)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook (Email Error)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Normal Research Email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook (Normal Success)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook (Email Error)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
